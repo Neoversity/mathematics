@@ -12,174 +12,134 @@ Original file is located at
 
 import numpy as np
 import matplotlib.pyplot as plt
-import sympy as sp
 
-# Означення функції ефективності роботи
+# Означимо функцію ефективності роботи
 def efficiency_function(x):
-    term1 = 2 * (4 / 1.2 * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((x - 11) / 1.2)**2)
-    term2 = 2 * (7 / 2.4 * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((x - 15) / 2.4)**2)
+    term1 = 2 * (4 / (1.2 * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - 11) / 1.2)**2)
+    term2 = 2 * (7 / (2.4 * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - 15) / 2.4)**2)
     return term1 + term2
 
-# Визначення вектору x і відповідних значень функції y
-x = np.linspace(0, 24, 400)
-y = efficiency_function(x)
+# Відрізок часу від 0 до 24
+x_vals = np.linspace(0, 24, 1000)
+y_vals = efficiency_function(x_vals)
 
-# Побудова графіка
-plt.figure(figsize=(10, 6))
-plt.plot(x, y, label='efficiency_function(x)')
-plt.title('Графік функції ефективності роботи')
-plt.xlabel('x')
-plt.ylabel('f(x)')
+# Побудуємо графік
+plt.plot(x_vals, y_vals)
+plt.xlabel('Час (години)')
+plt.ylabel('Ефективність (кількість тасків за одиницю часу)')
+plt.title('Залежність ефективності роботи від часу доби')
 plt.grid(True)
-plt.legend()
 plt.show()
 
-# Означення символьної змінної
+import sympy as sp
+
+# Означимо змінну та функцію для SymPy
 x = sp.symbols('x')
+efficiency_expr = 2 * (4 / (1.2 * sp.sqrt(2 * sp.pi))) * sp.exp(-0.5 * ((x - 11) / 1.2)**2) + 2 * (7 / (2.4 * sp.sqrt(2 * sp.pi))) * sp.exp(-0.5 * ((x - 15) / 2.4)**2)
 
-# Означення функції ефективності роботи (використовуємо ту саму, що й раніше)
-def efficiency_function(x):
-    term1 = 2 * (4 / 1.2 * sp.sqrt(2 * sp.pi)) * sp.exp(-0.5 * ((x - 11) / 1.2)**2)
-    term2 = 2 * (7 / 2.4 * sp.sqrt(2 * sp.pi)) * sp.exp(-0.5 * ((x - 15) / 2.4)**2)
-    return term1 + term2
+# Обчислимо невизначений інтеграл
+indefinite_integral = sp.integrate(efficiency_expr, x)
+print("Невизначений інтеграл:")
+print(indefinite_integral)
 
-# Символьне обчислення невизначеного інтегралу функції
-integral_indefinite = sp.integrate(efficiency_function(x), x)
-print(f'Невизначений інтеграл функції: {integral_indefinite}')
+# Означимо межі інтегрування
+a = 9
+b = 18
 
-# Визначення меж інтегрування
-a = 9  # початок робочого дня
-b = 18  # кінець робочого дня
-
-# Символьне обчислення визначеного інтегралу від a до b
-integral_definite = sp.integrate(efficiency_function(x), (x, a, b))
-
-# Отримання числового значення визначеного інтегралу
-numerical_value = integral_definite.evalf()
-
-print(f'Числове значення визначеного інтегралу від {a} до {b}: {numerical_value}')
+# Обчислимо визначений інтеграл
+definite_integral = sp.integrate(efficiency_expr, (x, a, b))
+print("Визначений інтеграл на інтервалі [9, 18]:")
+print(definite_integral.evalf())
 
 """# Завдання 2
 Напиши функцію чисельного інтегрування методом прямокутників та порахуй інтеграл від a до b.
 """
 
-x = sp.Symbol('x')
+# Функція чисельного інтегрування методом прямокутників
+def rectangle_method(func, a, b, n):
+    # Розділимо область інтегрування на n відрізків
+    x = np.linspace(a, b, n+1)
+    # Обчислимо ширину кожного відрізка
+    dx = (b - a) / n
+    # Застосуємо метод прямокутників (правий кінець кожного підвідрізка)
+    area = np.sum(func(x[:-1])) * dx
+    return area
 
-# Перетворення символьного виразу на функцію, яку можна викликати
-efficiency_function = sp.lambdify(x, efficiency_function_sym, 'numpy')
+# Означимо межі інтегрування
+a = 9
+b = 18
 
-# Визначення функції для чисельного інтегрування методом прямокутників
-def rectangular_integration(func, a, b, n):
-    dx = (b - a) / n  # Ширина кожного прямокутника
-    integral = 0.0
-    for i in range(n):
-        xi = a + i * dx  # Ліва границя поточного прямокутника
-        integral += func(xi) * dx  # Площа поточного прямокутника
-    return integral
+# Кількість відрізків для інтегрування
+n = 1000
 
-# Визначення меж інтегрування
-a = 9  # початок робочого дня
-b = 18  # кінець робочого дня
+# Обчислимо визначений інтеграл методом прямокутників
+integral_value = rectangle_method(efficiency_function, a, b, n)
 
-# Кількість прямокутників для методу прямокутників
-n_rectangles = 1000
-
-# Обчислення інтегралу за допомогою методу прямокутників
-approx_integral = rectangular_integration(efficiency_function, a, b, n_rectangles)
-print(f'Наближене значення інтегралу методом прямокутників (при {n_rectangles} прямокутниках): {approx_integral}')
-
-# Візуалізація функції
-x_vals = np.linspace(0, 24, 400)
-y_vals = efficiency_function(x_vals)
-
-plt.figure(figsize=(10, 6))
-plt.plot(x_vals, y_vals, label='efficiency_function(x)')
-plt.title('Графік функції ефективності роботи')
-plt.xlabel('x')
-plt.ylabel('f(x)')
-plt.grid(True)
-plt.legend()
-plt.show()
+integral_value
 
 """# Завдання 3
 Напиши функцію чисельного інтегрування методом трапецій та порахуй інтеграл від a до b.
 """
 
-def trapezoidal_integration(func, a, b, n):
-    """Чисельне інтегрування методом трапецій.
+# Функція чисельного інтегрування методом трапецій
+def trapezoidal_method(func, a, b, n):
+    # Розділимо область інтегрування на n відрізків
+    x = np.linspace(a, b, n + 1)
+    # Обчислимо ширину кожного відрізка
+    dx = (b - a) / n
+    # Застосуємо метод трапецій
+    area = (np.sum(func(x)) - 0.5 * (func(a) + func(b))) * dx
+    return area
 
-    Parameters:
-    func (callable): Функція, яку треба інтегрувати.
-    a, b (float): Межі інтегрування.
-    n (int): Кількість підінтервалів.
+# Означимо межі інтегрування
+a = 9
+b = 18
 
-    Returns:
-    float: Значення наближеного інтегралу.
+# Кількість відрізків для інтегрування
+n = 1000
 
-    """
-    dx = (b - a) / n  # Ширина кожного підінтервалу
-    integral = 0.5 * (func(a) + func(b))  # Початкове значення інтегралу
+# Обчислимо визначений інтеграл методом трапецій
+integral_value = trapezoidal_method(efficiency_function, a, b, n)
 
-    # Сумуємо значення функції на кожному підінтервалі (від a+dx до b-dx)
-    for i in range(1, n):
-        integral += func(a + i * dx)
-
-    # Завершуємо обчислення, множимо на dx і отримуємо остаточне значення інтегралу
-    integral *= dx
-    return integral
-
-# Кількість підінтервалів для методу трапецій
-n_trapezoids = 1000
-
-# Обчислення інтегралу за допомогою методу трапецій
-approx_integral = trapezoidal_integration(efficiency_function, a, b, n_trapezoids)
-print(f'Наближене значення інтегралу методом трапецій (при {n_trapezoids} трапеціях): {approx_integral}')
+integral_value
 
 """# Завдання 4
 Напиши функцію чисельного інтегрування методом Сімпсона та порахуй інтеграл від a до b.
 """
 
-def simpson_integration(func, a, b, n):
-    """Чисельне інтегрування методом Сімпсона.
-
-    Parameters:
-    func (callable): Функція, яку треба інтегрувати.
-    a, b (float): Межі інтегрування.
-    n (int): Кількість підінтервалів (повинна бути парною).
-
-    Returns:
-    float: Значення наближеного інтегралу.
-
-    """
+# Функція чисельного інтегрування методом Сімпсона
+def simpson_method(func, a, b, n):
+    # Перевіримо, чи є n парним, щоб використовувати метод Сімпсона
     if n % 2 != 0:
-        raise ValueError("Кількість підінтервалів n повинна бути парною.")
+        raise ValueError("n має бути парним для використання методу Сімпсона.")
 
-    dx = (b - a) / n  # Ширина кожного підінтервалу
-    x = np.linspace(a, b, n+1)  # Точки для обчислення значень функції
+    # Розділимо область інтегрування на n відрізків
+    x = np.linspace(a, b, n + 1)
+    # Обчислимо ширину кожного відрізка
+    dx = (b - a) / n
+    # Застосуємо метод Сімпсона
+    area = dx / 3 * (func(a) + func(b) + 4 * np.sum(func(x[1:-1:2])) + 2 * np.sum(func(x[2:-2:2])))
+    return area
 
-    # Значення функції в обчисленних точках
-    y = func(x)
+# Означимо межі інтегрування
+a = 9
+b = 18
 
-    # Обчислення інтегралу за допомогою методу Сімпсона
-    integral = dx / 3 * np.sum(y[0:-1:2] + 4 * y[1::2] + y[2::2])
+# Кількість відрізків для інтегрування (має бути парним)
+n = 1000
 
-    return integral
+# Обчислимо визначений інтеграл методом Сімпсона
+integral_value = simpson_method(efficiency_function, a, b, n)
 
-# Кількість підінтервалів для методу Сімпсона (повинна бути парною)
-n_simpson = 100
-
-# Обчислення інтегралу за допомогою методу Сімпсона
-approx_integral = simpson_integration(efficiency_function, a, b, n_simpson)
-print(f'Наближене значення інтегралу методом Сімпсона (при {n_simpson} підінтервалах): {approx_integral}')
+integral_value
 
 """# Завдання 5
 Порахуй інтеграл від a до b за допомогою функції scipy.integrate.quad.
 """
 
-from scipy import integrate
+from scipy.integrate import quad
 
-# Обчислення інтегралу за допомогою функції scipy.integrate.quad
-result, error = integrate.quad(efficiency_function, a, b)
+# Обчислимо визначений інтеграл за допомогою scipy.integrate.quad
+integral_value, error = quad(efficiency_function, a, b)
 
-print(f'Наближене значення інтегралу методом quad: {result}')
-print(f'Апроксимована похибка: {error}')
+print("Обчислений інтеграл за допомогою scipy.integrate.quad:", integral_value)
